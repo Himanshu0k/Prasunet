@@ -43,8 +43,9 @@ public class UserService {
                 .name(name)
                 .email(email)
                 .password(passwordEncoder.encode(password))
-                .role(role) // ✅ use passed role
+                .role(Role.MENTOR) // ✅ use passed role
                 .createdAt(Instant.now())
+                .approved(true)
                 .build();
 
         // ✅ IMPORTANT: ensure non-null return

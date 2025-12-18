@@ -71,6 +71,7 @@ public class CourseService {
                 .orElseThrow(() -> new RuntimeException("Mentor not found"));
 
         if (mentor.getRole() != Role.MENTOR) {
+            System.out.println("error");
             throw new RuntimeException("Only mentors allowed");
         }
 
