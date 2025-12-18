@@ -28,7 +28,7 @@ public class UserService {
                 .name(name)
                 .email(email)
                 .password(passwordEncoder.encode(password))
-                .role(role)
+                .role(Role.STUDENT)
                 .createdAt(Instant.now())
                 .build();
 
@@ -43,7 +43,6 @@ public class UserService {
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid password");
         }
-
         return user;
     }
 }
