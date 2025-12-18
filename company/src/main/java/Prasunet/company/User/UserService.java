@@ -5,6 +5,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -18,8 +19,22 @@ public class UserService {
         this.passwordEncoder = encoder;
     }
 
+    private static final Pattern EMAIL_PATTERN =
+            Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+
     public User signup(String name, String email, String password, Role role) {
 
+        // ✅ Validation: empty email
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be empty");
+        }
+
+        // ✅ Validation: invalid email format
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            throw new IllegalArgumentException("Invalid email format");
+        }
+
+        // ✅ Validation: duplicate email
         if (userRepository.existsByEmail(email)) {
             throw new RuntimeException("Email already registered");
         }
@@ -28,10 +43,11 @@ public class UserService {
                 .name(name)
                 .email(email)
                 .password(passwordEncoder.encode(password))
-                .role(Role.STUDENT)
+                .role(role) // ✅ use passed role
                 .createdAt(Instant.now())
                 .build();
 
+        // ✅ IMPORTANT: ensure non-null return
         return userRepository.save(user);
     }
 
@@ -43,6 +59,7 @@ public class UserService {
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid password");
         }
+
         return user;
     }
 }

@@ -31,19 +31,19 @@ class UserServiceTest {
 
     @Test
     void shouldSignupUserSuccessfully() {
-        // GIVEN
         String email = "test@gmail.com";
+
         when(userRepository.existsByEmail(email)).thenReturn(false);
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
-        // WHEN
-        User user = userService.signup("Test User", email, "password123", "STUDENT");
+        User user = userService.signup("Test User", email, "password123", Role.STUDENT);
 
-        // THEN
         assertNotNull(user);
         assertEquals(email, user.getEmail());
         assertTrue(passwordEncoder.matches("password123", user.getPassword()));
-        verify(userRepository, times(1)).save(any(User.class));
     }
+
 
     @Test
     void shouldThrowExceptionIfEmailAlreadyExists() {
@@ -52,7 +52,7 @@ class UserServiceTest {
 
         // THEN
         assertThrows(RuntimeException.class, () ->
-                userService.signup("Test", "test@gmail.com", "pass", "STUDENT")
+                userService.signup("Test", "test@gmail.com", "pass", Role.STUDENT)
         );
     }
 
@@ -90,4 +90,28 @@ class UserServiceTest {
                 userService.login("test@gmail.com", "wrongpass")
         );
     }
+
+    @Test
+    void shouldThrowExceptionForEmptyEmail() {
+        assertThrows(IllegalArgumentException.class, () ->
+                userService.signup("Name", "", "password123", Role.STUDENT)
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionForInvalidEmailFormat() {
+        assertThrows(IllegalArgumentException.class, () ->
+                userService.signup("Name", "invalid-email", "password123", Role.STUDENT)
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionIfUserNotFoundOnLogin() {
+        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () ->
+                userService.login("unknown@test.com", "password123")
+        );
+    }
+
 }
